@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Path - LearnSphere</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Mermaid.js -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body class="bg-gray-900 text-white font-['Outfit'] overflow-hidden">
+
+    <!-- Background Elements -->
+    <div class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden">
+        <div
+            class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
+        </div>
+        <div
+            class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
+        </div>
+    </div>
+
+    <!-- Navigation Bar (Top) -->
+    <nav
+        class="fixed top-0 left-0 right-0 h-16 bg-black/20 backdrop-blur-md border-b border-white/10 flex items-center justify-between px-6 z-50">
+        <div class="flex items-center gap-4">
+            <a href="/?reset=true"
+                class="w-10 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all">
+                <i class="fa-solid fa-house"></i>
+            </a>
+            <a href="/?skip_onboarding=true"
+                class="w-10 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                title="Dashboard">
+                <i class="fa-solid fa-columns"></i>
+            </a>
+            <h1 class="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Learning Path</h1>
+        </div>
+        <div>
+            <a href="/editor"
+                class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-2 transition-all text-sm">
+                <i class="fa-solid fa-code"></i> Python Lab
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-8 px-4 h-screen flex flex-col items-center justify-center">
+
+        <div class="w-full max-w-6xl h-full glass rounded-2xl p-6 relative overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center mb-4 z-10">
+                <h2 class="text-lg font-semibold text-gray-300">Machine Learning Roadmap</h2>
+                <div class="flex gap-2">
+                    <button onclick="zoomDiagram(0.1)"
+                        class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                    </button>
+                    <button onclick="zoomDiagram(-0.1)"
+                        class="w-8 h-8 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors">
+                        <i class="fa-solid fa-minus text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="diagram-container"
+                class="flex-1 w-full overflow-auto flex items-center justify-center bg-black/20 rounded-xl border border-white/5 custom-scrollbar">
+                <div class="mermaid transform-origin-center transition-transform duration-200">
+                    graph TD
+                    %% Styles
+                    classDef foundation fill:#1e293b,stroke:#3b82f6,stroke-width:2px,color:#fff;
+                    classDef ml fill:#1e293b,stroke:#a855f7,stroke-width:2px,color:#fff;
+                    classDef dl fill:#1e293b,stroke:#ec4899,stroke-width:2px,color:#fff;
+                    classDef advanced fill:#1e293b,stroke:#f59e0b,stroke-width:2px,color:#fff;
+                    classDef start fill:#3b82f6,stroke:#fff,stroke-width:2px,color:#fff,font-weight:bold;
+
+                    Start((Start Here)):::start --> Python[Python Basics]:::foundation
+                    Python --> Math[Mathematics for ML]:::foundation
+
+                    subgraph Foundation
+                    Math --> LinearAlg[Linear Algebra]:::foundation
+                    Math --> Calculus[Calculus]:::foundation
+                    Math --> Stats[Statistics]:::foundation
+                    end
+
+                    LinearAlg --> ML_Intro[Intro to ML]:::ml
+                    Calculus --> ML_Intro
+                    Stats --> ML_Intro
+
+                    subgraph Core_ML [Core Machine Learning]
+                    ML_Intro --> Supervised[Supervised Learning]:::ml
+                    ML_Intro --> Unsupervised[Unsupervised Learning]:::ml
+
+                    Supervised --> Reg[Regression]:::ml
+                    Supervised --> Class[Classification]:::ml
+
+                    Unsupervised --> Cluster[Clustering]:::ml
+                    Unsupervised --> DimRed[Dim Reduction]:::ml
+                    end
+
+                    Reg --> NeuralNets[Neural Networks]:::dl
+                    Class --> NeuralNets
+
+                    subgraph Deep_Learning [Deep Learning]
+                    NeuralNets --> CNN[CNN - Vision]:::dl
+                    NeuralNets --> RNN[RNN - Sequence]:::dl
+                    RNN --> LSTM[LSTM / GRU]:::dl
+                    end
+
+                    CNN --> Transformers[Transformers]:::advanced
+                    LSTM --> Transformers
+
+                    subgraph Advanced_Topics [Advanced Topics]
+                    Transformers --> BERT[BERT / GPT]:::advanced
+                    Transformers --> VisionTrans[Vision Transformers]:::advanced
+
+                    ML_Intro --> RL[Reinforcement Learning]:::advanced
+                    GANs[GANs / Diffusion]:::advanced
+                    end
+
+                    CNN -.-> GANs
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'dark', securityLevel: 'loose' });
+
+        let zoomLevel = 1;
+        function zoomDiagram(change) {
+            const container = document.querySelector('.mermaid');
+            if (!container) return;
+
+            zoomLevel += change;
+            zoomLevel = Math.max(0.5, Math.min(zoomLevel, 2.5));
+
+            container.style.transform = `scale(${zoomLevel})`;
+            container.style.transformOrigin = 'top center'; // Corrects clipping issue
+        }
+    </script>
+</body>
+
+</html>

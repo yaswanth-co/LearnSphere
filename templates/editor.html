@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Lab - LearnSphere</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body class="bg-gray-900 text-white font-['Outfit'] overflow-hidden h-screen flex flex-col">
+
+    <!-- Header -->
+    <header
+        class="h-16 border-b border-white/10 bg-black/20 backdrop-blur-md flex items-center justify-between px-6 z-20">
+        <div class="flex items-center gap-4">
+            <a href="/?reset=true"
+                class="w-10 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                title="Back to Home">
+                <i class="fa-solid fa-house"></i>
+            </a>
+            <a href="/?skip_onboarding=true"
+                class="w-10 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center text-gray-400 hover:text-white transition-all"
+                title="Dashboard">
+                <i class="fa-solid fa-columns"></i>
+            </a>
+            <h1 class="text-xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+                Python Lab</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="shareCode()"
+                class="px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 flex items-center gap-2 transition-all">
+                <i class="fa-solid fa-share-nodes text-sm"></i> <span class="text-sm">Share</span>
+            </button>
+            <button onclick="runCode()" id="run-btn"
+                class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-500 text-white font-semibold shadow-lg shadow-green-500/20 flex items-center gap-2 transition-all hover:scale-105 active:scale-95">
+                <i class="fa-solid fa-play text-xs"></i> <span>Run Code</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Editor Area -->
+    <main class="flex-1 flex overflow-hidden">
+        <!-- Editor -->
+        <div class="flex-1 flex flex-col border-r border-white/10 bg-[#1e1e1e]">
+            <div class="h-8 bg-[#252526] flex items-center px-4 text-xs text-gray-400 select-none">
+                main.py
+            </div>
+            <textarea id="code-input"
+                class="flex-1 w-full bg-transparent p-4 font-['Fira_Code'] text-sm text-gray-300 outline-none resize-none leading-relaxed"
+                spellcheck="false" placeholder="# Type your Python code here...
+print('Hello, LearnSphere!')"></textarea>
+        </div>
+
+        <!-- Output Console -->
+        <div class="w-[40%] flex flex-col bg-[#0f0f0f]">
+            <div
+                class="h-8 bg-[#181818] flex items-center justify-between px-4 text-xs text-gray-400 select-none border-b border-white/5">
+                <span>Output</span>
+                <button onclick="clearConsole()" class="hover:text-white"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <div id="console-output"
+                class="flex-1 p-4 font-['Fira_Code'] text-sm text-gray-300 overflow-y-auto whitespace-pre-wrap"></div>
+        </div>
+    </main>
+
+    <script>
+        // Check for shared code in URL
+        window.onload = function () {
+            const params = new URLSearchParams(window.location.search);
+            const code = params.get('code');
+            if (code) {
+                document.getElementById('code-input').value = decodeURIComponent(code);
+            }
+        };
+
+        async function runCode() {
+            const code = document.getElementById('code-input').value;
+            const outputDiv = document.getElementById('console-output');
+            const btn = document.getElementById('run-btn');
+
+            if (!code.trim()) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Running...';
+            outputDiv.innerHTML += '<span class="text-gray-500">> Running...</span>\n';
+
+            try {
+                const response = await fetch('/api/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+
+                const data = await response.json();
+
+                if (data.output) {
+                    outputDiv.innerHTML += `<span class="text-green-400">${data.output}</span>\n`;
+                }
+                if (data.error) {
+                    outputDiv.innerHTML += `<span class="text-red-400">${data.error}</span>\n`;
+                }
+
+                outputDiv.scrollTop = outputDiv.scrollHeight;
+
+            } catch (error) {
+                outputDiv.innerHTML += `<span class="text-red-500">Error: ${error.message}</span>\n`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-play text-xs"></i> <span>Run Code</span>';
+            }
+        }
+
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        function shareCode() {
+            const code = document.getElementById('code-input').value;
+            const url = window.location.origin + window.location.pathname + '?code=' + encodeURIComponent(code);
+
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Shareable link copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    </script>
+</body>
+
+</html>

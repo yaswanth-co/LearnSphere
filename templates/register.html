@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - LearnSphere</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body class="bg-gray-900 text-white font-['Outfit'] h-screen flex items-center justify-center overflow-hidden">
+
+    <!-- Background Elements -->
+    <div class="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden">
+        <div
+            class="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob">
+        </div>
+        <div
+            class="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000">
+        </div>
+    </div>
+
+    <!-- Register Card -->
+    <div class="w-full max-w-md p-8 glass rounded-2xl shadow-2xl border border-white/10 relative">
+        <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-t-2xl">
+        </div>
+
+        <div class="text-center mb-8">
+            <div
+                class="w-16 h-16 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 flex items-center justify-center shadow-lg shadow-blue-500/30 mx-auto mb-4">
+                <i class="fa-solid fa-user-plus text-2xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">
+                Join LearnSphere</h2>
+            <p class="text-gray-400 text-sm mt-2">Create your account to save your progress.</p>
+        </div>
+
+        <form id="register-form" class="space-y-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-400 mb-2">Username</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-3.5 text-gray-500"><i class="fa-solid fa-user"></i></span>
+                    <input type="text" id="username" required
+                        class="w-full bg-black/20 border border-white/10 rounded-xl px-10 py-3 outline-none focus:border-purple-400/50 focus:ring-1 focus:ring-purple-400/50 transition-all text-white placeholder-gray-600"
+                        placeholder="Choose a username">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-400 mb-2">Password</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-3.5 text-gray-500"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" id="password" required
+                        class="w-full bg-black/20 border border-white/10 rounded-xl px-10 py-3 outline-none focus:border-purple-400/50 focus:ring-1 focus:ring-purple-400/50 transition-all text-white placeholder-gray-600"
+                        placeholder="Create a password">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-400 mb-2">Confirm Password</label>
+                <div class="relative">
+                    <span class="absolute left-4 top-3.5 text-gray-500"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" id="confirm-password" required
+                        class="w-full bg-black/20 border border-white/10 rounded-xl px-10 py-3 outline-none focus:border-purple-400/50 focus:ring-1 focus:ring-purple-400/50 transition-all text-white placeholder-gray-600"
+                        placeholder="Confirm password">
+                </div>
+            </div>
+
+            <button type="submit"
+                class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold shadow-lg shadow-purple-500/30 transition-all transform hover:scale-[1.02] active:scale-[0.98]">
+                Create Account
+            </button>
+        </form>
+
+        <p class="text-center text-gray-400 text-sm mt-6">
+            Already have an account? <a href="/login" class="text-blue-400 hover:text-blue-300 transition-colors">Log
+                In</a>
+        </p>
+        <div class="mt-4 text-center">
+            <a href="/" class="text-gray-500 hover:text-gray-300 text-xs transition-colors"><i
+                    class="fa-solid fa-arrow-left mr-1"></i> Back to Home</a>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const btn = e.target.querySelector('button');
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Registration successful! Redirecting...');
+                    window.location.href = '/';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred during registration.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Create Account';
+            }
+        });
+    </script>
+</body>
+
+</html>
