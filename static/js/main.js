@@ -21,15 +21,15 @@ document.addEventListener('DOMContentLoaded', () => {
         userLevel = savedLevel;
     }
 
-    if (savedLevel || skip === 'true') {
-        const modal = document.getElementById('onboarding-modal');
-        const dashboard = document.getElementById('dashboard');
-        if (modal && dashboard) {
-            modal.classList.add('hidden');
-            dashboard.classList.remove('hidden');
-            dashboard.classList.remove('opacity-0');
-        }
-    }
+    // if (savedLevel || skip === 'true') {
+    //     const modal = document.getElementById('onboarding-modal');
+    //     const dashboard = document.getElementById('dashboard');
+    //     if (modal && dashboard) {
+    //         modal.classList.add('hidden');
+    //         dashboard.classList.remove('hidden');
+    //         dashboard.classList.remove('opacity-0');
+    //     }
+    // }
 });
 
 function selectLevel(level) {
@@ -87,6 +87,9 @@ async function generateContent() {
     }
 }
 
+// X-Ray Data Store
+let currentXRayMap = {};
+
 // Render Content
 function renderContent(data) {
     // 1. Explanation
@@ -98,15 +101,109 @@ function renderContent(data) {
 
     typeWriter(formattedText, explanationDiv);
 
-    // 2. Code
-    const codeEditor = document.getElementById('code-editor');
-    codeEditor.value = data.code;
+    // 2. Code & X-Ray
+    const codeDisplay = document.getElementById('code-display');
+    // Escape HTML characters to prevent rendering issues in Prism
+    const escapedCode = data.code.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    codeDisplay.innerHTML = escapedCode;
+
+    // Store X-Ray Map
+    currentXRayMap = data.xray || {};
+
+    // Trigger Prism Highlight
+    Prism.highlightElement(codeDisplay);
+
+    // Initialize X-Ray Interaction
+    initXRay();
 
     // 3. Diagram
     const diagramContainer = document.getElementById('diagram-container');
     diagramContainer.innerHTML = `<div class="mermaid" style="transform: scale(1); transform-origin: top left;">${data.diagram}</div>`;
     zoomLevel = 1; // Reset zoom
-    mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+
+    try {
+        mermaid.init(undefined, document.querySelectorAll('.mermaid'));
+    } catch (err) {
+        console.error("Mermaid Render Error:", err);
+        diagramContainer.innerHTML = `
+            <div class="p-4 text-red-400 text-sm font-mono overflow-auto h-full">
+                <div class="mb-2 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Visualization Error</div>
+                <div class="opacity-70 mb-4">${err.message}</div>
+                <div class="text-xs text-gray-500 mb-1">Raw Code:</div>
+                <pre class="bg-black/20 p-2 rounded whitespace-pre-wrap select-text">${data.diagram}</pre>
+            </div>
+        `;
+    }
+}
+
+// X-Ray Interaction Logic
+function initXRay() {
+    const codeContainer = document.getElementById('code-container');
+
+    // Naively clone to remove old listeners (acceptable for this scope)
+    const newContainer = codeContainer.cloneNode(true);
+    codeContainer.parentNode.replaceChild(newContainer, codeContainer);
+
+    const activeContainer = document.getElementById('code-container');
+    // Re-select tooltip elements inside the fresh container
+    const activeTooltip = activeContainer.querySelector('#xray-tooltip');
+    const activeTooltipText = activeContainer.querySelector('#xray-text');
+    const preTag = activeContainer.querySelector('pre');
+
+    activeContainer.addEventListener('mousemove', (e) => {
+        const rect = activeContainer.getBoundingClientRect();
+
+        // Dynamic Measurment
+        const computedStyle = window.getComputedStyle(preTag);
+        const lineHeight = parseFloat(computedStyle.lineHeight); // e.g. 21
+        const paddingTop = parseFloat(computedStyle.paddingTop); // e.g. 16
+
+        // Relative Y position inside the container, adjusted for scroll
+        const scrollTop = preTag.scrollTop;
+        const relativeY = e.clientY - rect.top; // Mouse Y relative to container top
+
+        // Adjust for padding and scroll
+        // The code content starts appearing at `paddingTop` pixels down.
+        // So line 1 is at y=paddingTop to y=paddingTop+lineHeight
+        const contentY = relativeY + scrollTop - paddingTop;
+
+        if (contentY < 0) {
+            // Hovering in top padding area
+            activeTooltip.classList.add('hidden');
+            activeTooltip.classList.add('opacity-0');
+            return;
+        }
+
+        const lineNumber = Math.floor(contentY / lineHeight) + 1;
+
+        // Debugging (view in console if needed)
+        // console.log(`Y: ${relativeY}, Scroll: ${scrollTop}, Padding: ${paddingTop}, LineHeight: ${lineHeight} -> Line: ${lineNumber}`);
+
+        const explanation = currentXRayMap[lineNumber.toString()];
+
+        if (explanation) {
+            // Show Tooltip
+            activeTooltipText.textContent = explanation;
+            activeTooltip.classList.remove('hidden');
+            activeTooltip.classList.remove('opacity-0');
+
+            // Position Tooltip
+            activeTooltip.style.left = `${e.clientX - rect.left + 20}px`;
+            activeTooltip.style.top = `${e.clientY - rect.top + 20}px`;
+
+        } else {
+            // Hide if no explanation
+            activeTooltip.classList.add('hidden');
+            activeTooltip.classList.add('opacity-0');
+        }
+    });
+
+    activeContainer.addEventListener('mouseleave', () => {
+        if (activeTooltip) {
+            activeTooltip.classList.add('hidden');
+            activeTooltip.classList.add('opacity-0');
+        }
+    });
 }
 
 // Typewriter Effect
@@ -158,10 +255,10 @@ document.getElementById('topic-input').addEventListener('keypress', function (e)
 
 // Copy Code to Clipboard
 function copyCode() {
-    const codeEditor = document.getElementById('code-editor');
-    if (!codeEditor || !codeEditor.value) return;
+    const codeDisplay = document.getElementById('code-display');
+    if (!codeDisplay || !codeDisplay.innerText) return;
 
-    navigator.clipboard.writeText(codeEditor.value).then(() => {
+    navigator.clipboard.writeText(codeDisplay.innerText).then(() => {
         const btn = document.querySelector('button[title="Copy Code"]');
         const originalContent = btn.innerHTML;
 

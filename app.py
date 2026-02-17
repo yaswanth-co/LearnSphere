@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import sys
 import io
 import contextlib
+import json
 
 # Debugging Environment
 print(f"Current Working Directory: {os.getcwd()}")
@@ -139,9 +140,10 @@ def generate_content():
     Structure your response deeply in a JSON object with strictly these keys:
     - explanation: A concise, clear explanation suitable for the user's level. Use Markdown for bolding key terms.
     - code: A Python code snippet demonstrating the concept (use libraries like sklearn, tensorflow, or simple python logic).
-    - diagram: A Mermaid.js graph definition (e.g., graph LR, sequenceDiagram) to visualize the concept. RETURN ONLY THE MERMAID CODE TEXT, NO WRAPPER.
+    - xray: A dictionary mapping line numbers (as strings, e.g., "1", "2") to a brief explanation of what that specific line does. Ensure the line numbers correspond exactly to the lines in the 'code' snippet.
+    - diagram: A Mermaid.js graph definition (e.g., graph LR, sequenceDiagram) to visualize the concept. RETURN ONLY THE MERMAID CODE TEXT, NO WRAPPER. IMPORTANT: Quote all node text to avoid syntax errors, e.g., A["Node Text"]. Do not use parentheses inside labels without quotes.
     
-    Make the explanation engaging and the code runnable.
+    Make the explanation engaging and the code runnable. Ensure 'xray' covers key lines of the code.
     """
 
     try:
@@ -161,10 +163,37 @@ def generate_content():
                 model = genai.GenerativeModel(model_name)
                 response = model.generate_content(prompt, generation_config={"response_mime_type": "application/json"})
                 
-                # Parse the JSON string from Gemini before returning to avoid double serialization
-                import json
                 print(f"Success with model: {model_name}", flush=True)
-                return jsonify(json.loads(response.text))
+                
+                # Clean up the response text (remove markdown code blocks)
+                text = response.text.strip()
+                if text.startswith("```json"):
+                    text = text[7:]
+                if text.startswith("```"):
+                    text = text[3:]
+                if text.endswith("```"):
+                    text = text[:-3]
+                text = text.strip()
+                
+                # Parse JSON
+                try:
+                    parsed_data = json.loads(text)
+                except json.JSONDecodeError:
+                    # Attempt to fix common JSON issues if needed, or just fail to next model
+                    print(f"JSON Decode Error for model {model_name}. Raw text: {text[:100]}...", flush=True)
+                    raise
+                
+                import re
+                if "diagram" in parsed_data:
+                    diagram_code = parsed_data["diagram"]
+                    # Remove markdown wrappers like ```mermaid ... ``` or just ``` ... ```
+                    # Also handles leading/trailing whitespace and case-insensitive 'mermaid'
+                    diagram_code = re.sub(r'^```(?:mermaid)?\s*', '', diagram_code, flags=re.IGNORECASE)
+                    diagram_code = re.sub(r'\s*```$', '', diagram_code)
+                    parsed_data["diagram"] = diagram_code.strip()
+                    print(f"DEBUG: Final Diagram Code:\n{parsed_data['diagram']}", flush=True)
+
+                return jsonify(parsed_data)
             except Exception as e:
                 print(f"Error with model {model_name}: {e}", flush=True)
                 last_exception = e
@@ -180,6 +209,11 @@ def generate_content():
         mock_data = {
             "explanation": f"**{topic}** (Mock Generated Explanation).\n\nSince the API key is missing or an error occurred, this is a placeholder. \n\nMachine learning is a field of inquiry devoted to understanding and building methods that 'learn', that is, methods that leverage data to improve performance on some set of tasks.",
             "code": f"# Example code for {topic}\nimport numpy as np\n\nprint('Hello from the mock backend!')\n# Real code would be generated here.",
+            "xray": {
+                "1": "Importing the numpy library for numerical operations.",
+                "3": "Printing a greeting message to the console.",
+                "4": "A comment indicating where real code would be."
+            },
             "diagram": "graph LR\n    A[Input] --> B{Process}\n    B -->|Success| C[Output]\n    B -->|Error| D[Fallback]"
         }
         return jsonify(mock_data)

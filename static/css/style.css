@@ -91,3 +91,51 @@
     font-family: 'Fira Code', monospace;
     line-height: 1.5;
 }
+
+/* Prism.js Overrides & X-Ray Styles */
+pre[class*="language-"] {
+    text-shadow: none !important;
+    font-family: 'Fira Code', monospace !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    background: transparent !important;
+}
+
+code[class*="language-"],
+pre[class*="language-"] {
+    color: #d4d4d4 !important;
+    /* VS Code Default Text */
+    text-shadow: none !important;
+}
+
+/* Line Numbers */
+.line-numbers .line-numbers-rows {
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* X-Ray Hover Effect */
+.xray-highlight {
+    background: rgba(59, 130, 246, 0.15);
+    /* Blue-500 with low opacity */
+    position: absolute;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Ensure code is above highlight but transparent */
+code {
+    position: relative;
+    z-index: 1;
+}
+
+/* X-Ray Tooltip Animation */
+#xray-tooltip {
+    transition: opacity 0.2s, transform 0.2s;
+    transform: translateY(10px);
+}
+
+#xray-tooltip:not(.hidden) {
+    transform: translateY(0);
+}

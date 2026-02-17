@@ -13,10 +13,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Prism.js (VS Code Dark Theme) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-vsc-dark-plus.min.css"
+        rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css"
+        rel="stylesheet" />
     <!-- Mermaid.js -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=4">
 </head>
 
 <body class="bg-gray-900 text-white font-['Outfit'] overflow-hidden">
@@ -206,10 +211,18 @@
                             <i class="fa-solid fa-copy"></i> Copy
                         </button>
                     </div>
-                    <div class="relative flex-1 rounded-xl overflow-hidden border border-white/5 bg-[#1e1e1e]">
-                        <textarea id="code-editor"
-                            class="w-full h-full bg-transparent p-4 font-mono text-sm text-gray-300 outline-none resize-none"
-                            spellcheck="false" placeholder="# Python code will generate here..."></textarea>
+                    <div class="relative flex-1 rounded-xl overflow-hidden border border-white/5 bg-[#1e1e1e] group"
+                        id="code-container">
+                        <!-- X-Ray Tooltip -->
+                        <div id="xray-tooltip"
+                            class="fixed hidden z-50 max-w-xs p-3 bg-blue-900/90 backdrop-blur-md text-blue-100 text-sm rounded-lg shadow-xl border border-blue-500/30 pointer-events-none transition-opacity duration-200">
+                            <div class="font-bold text-blue-300 mb-1 text-xs uppercase tracking-wider"><i
+                                    class="fa-solid fa-microscope mr-1"></i> X-Ray Insight</div>
+                            <span id="xray-text"></span>
+                        </div>
+
+                        <pre class="line-numbers h-full m-0 !bg-transparent !p-4 custom-scrollbar overflow-auto"><code id="code-display" class="language-python"># Python code will generate here...
+# Hover over lines to see X-Ray explanations!</code></pre>
                     </div>
                 </div>
 
@@ -218,8 +231,15 @@
         </main>
     </div>
 
+    <!-- Prism.js Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
     <!-- Scripts -->
-    <script src="/static/js/main.js"></script>
+    <script src="/static/js/main.js?v=4"></script>
+    </script>
     <script>
         mermaid.initialize({ startOnLoad: true, theme: 'dark' });
     </script>
